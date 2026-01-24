@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+price-collector:
+  selectors:
+    - url: https://tatphone.ru/apple-iphone-17-pro-512gb-silver
+      title: h1.product_title:matchesOwn((?i)iphone\s*17\s*pro)
+      price: div.wd-single-price span.woocommerce-Price-amount bdi
+    - url: https://tatphone.ru/apple-iphone-17-pro-512gb-silver-esim
+      title: h1.product_title:matchesOwn((?i)iphone\s*17\s*pro)
+      price: div.wd-single-price span.woocommerce-Price-amount bdi
+  scheduler:
+    cron: "0 */1 * * * *"
+
+spring:
+  application:
+    name: price-collector-service
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-interval: 10s
