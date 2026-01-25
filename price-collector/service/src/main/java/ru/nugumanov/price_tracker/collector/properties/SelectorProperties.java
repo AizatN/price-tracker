@@ -24,5 +24,6 @@ public class SelectorProperties {
         private String url;
         private String title;
         private String price;
+        private String type = "html";
     }
 }

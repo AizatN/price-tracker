@@ -6,9 +6,19 @@ price-collector:
     - url: https://tatphone.ru/apple-iphone-17-pro-512gb-silver
       title: h1.product_title:matchesOwn((?i)iphone\s*17\s*pro)
       price: div.wd-single-price span.woocommerce-Price-amount bdi
+      type: html
     - url: https://tatphone.ru/apple-iphone-17-pro-512gb-silver-esim
       title: h1.product_title:matchesOwn((?i)iphone\s*17\s*pro)
       price: div.wd-single-price span.woocommerce-Price-amount bdi
+      type: html
+    - url: https://apples116.ru/product/iphone-17-pro
+      title: iPhone 17 Pro (512Gb / Silver / ESIM only)
+      price: div.wd-single-price span.woocommerce-Price-amount bdi
+      type: js
+    - url: https://apples116.ru/product/iphone-17-pro
+      title: iPhone 17 Pro (512Gb / Silver / SIM+ESIM)
+      price: div.wd-single-price span.woocommerce-Price-amount bdi
+      type: js
   scheduler:
     cron: "0 */1 * * * *"
 
