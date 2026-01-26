@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="product.table.create" author="anugumanov">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="${schema.name}" tableName="product"/>
+            </not>
+        </preConditions>
+        <createTable schemaName="${schema.name}" tableName="product" remarks="Продукт">
+            <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()" remarks="Идентификатор">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar" remarks="Название">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="varchar" remarks="Url">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable schemaName="${schema.name}" tableName="product"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
