@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="price_history.table.create" author="anugumanov">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="${schema.name}" tableName="price_history"/>
+            </not>
+        </preConditions>
+        <createTable schemaName="${schema.name}" tableName="price_history" remarks="История цен">
+            <column name="id" type="BIGINT" autoIncrement="true" remarks="Идентификатор">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_offers_id" type="BIGINT" remarks="Идентификатор вариантов продажи продукта">
+                <constraints nullable="false"
+                             referencedTableSchemaName="${schema.name}"
+                             referencedTableName="product_offers"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_history_offers"/>
+            </column>
+            <column name="price" type="NUMERIC(12,2)" remarks="Цена">
+                <constraints nullable="false"/>
+            </column>
+            <column name="availability" type="boolean" defaultValue="false" remarks="Наличие">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parsed_dt" type="timestamp" defaultValue="now()" remarks="Дата и время парсинга">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable schemaName="${schema.name}" tableName="price_history"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

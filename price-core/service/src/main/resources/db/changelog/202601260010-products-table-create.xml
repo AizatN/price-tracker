@@ -5,25 +5,25 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-    <changeSet id="product.table.create" author="anugumanov">
+    <changeSet id="products.table.create" author="anugumanov">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists schemaName="${schema.name}" tableName="product"/>
+                <tableExists schemaName="${schema.name}" tableName="products"/>
             </not>
         </preConditions>
-        <createTable schemaName="${schema.name}" tableName="product" remarks="Продукт">
-            <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()" remarks="Идентификатор">
-                <constraints primaryKey="true"/>
+        <createTable schemaName="${schema.name}" tableName="products" remarks="Продукты">
+            <column name="id" type="BIGINT" autoIncrement="true" remarks="Идентификатор">
+                <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="varchar" remarks="Название">
                 <constraints nullable="false"/>
             </column>
-            <column name="url" type="varchar" remarks="Url">
+            <column name="create_dt" type="timestamp" defaultValue="now()" remarks="Дата создания">
                 <constraints nullable="false"/>
             </column>
         </createTable>
         <rollback>
-            <dropTable schemaName="${schema.name}" tableName="product"/>
+            <dropTable schemaName="${schema.name}" tableName="products"/>
         </rollback>
     </changeSet>
 

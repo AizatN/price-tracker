@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="product_offers.table.create" author="anugumanov">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="${schema.name}" tableName="product_offers"/>
+            </not>
+        </preConditions>
+        <createTable schemaName="${schema.name}" tableName="product_offers" remarks="Варианты продажи продукта">
+            <column name="id" type="BIGINT" autoIncrement="true" remarks="Идентификатор">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="source_id" type="BIGINT" remarks="Идентификатор магазина">
+                <constraints nullable="false"
+                             referencedTableSchemaName="${schema.name}"
+                             referencedTableName="sources"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_offers_sources"/>
+            </column>
+            <column name="product_id" type="BIGINT" remarks="Идентификатор продукта">
+                <constraints nullable="false"
+                             referencedTableSchemaName="${schema.name}"
+                             referencedTableName="products"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_offers_products"/>
+            </column>
+            <column name="url" type="varchar" remarks="URL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_parse_attempt" type="timestamp" remarks="Дата и время последней попытки парсинга">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_success_parse" type="timestamp" remarks="Дата и время последнего парсинга">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_dt" type="timestamp" defaultValue="now()" remarks="Дата и время создания">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" remarks="Дата и время изменения">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable schemaName="${schema.name}" tableName="product_offers"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="product_offers.index.ux_offer_source_url.create" author="anugumanov">
+        <preConditions onFail="MARK_RAN">
+            <columnExists schemaName="${schema.name}" tableName="product_offers" columnName="source_id"/>
+            <columnExists schemaName="${schema.name}" tableName="product_offers" columnName="url"/>
+        </preConditions>
+        <createIndex schemaName="${schema.name}" tableName="product_offers"
+                     indexName="ux_offer_source_url"
+                     unique="true">
+            <column name="source_id"/>
+            <column name="url"/>
+        </createIndex>
+        <rollback>
+            <dropIndex schemaName="${schema.name}" tableName="product_offers" indexName="ux_offer_source_url"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
