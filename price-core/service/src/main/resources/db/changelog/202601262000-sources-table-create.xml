@@ -5,17 +5,20 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-    <changeSet id="products.table.create" author="anugumanov">
+    <changeSet id="sources.table.create" author="anugumanov">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists schemaName="${schema.name}" tableName="products"/>
+                <tableExists schemaName="${schema.name}" tableName="sources"/>
             </not>
         </preConditions>
-        <createTable schemaName="${schema.name}" tableName="products" remarks="Продукты">
+        <createTable schemaName="${schema.name}" tableName="sources" remarks="Магазины">
             <column name="id" type="BIGINT" autoIncrement="true" remarks="Идентификатор">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="varchar" remarks="Название">
+                <constraints nullable="false"/>
+            </column>
+            <column name="base_url" type="varchar" remarks="URL магазина">
                 <constraints nullable="false"/>
             </column>
             <column name="create_dt" type="timestamp" defaultValue="now()" remarks="Дата создания">
@@ -23,8 +26,12 @@
             </column>
         </createTable>
         <rollback>
-            <dropTable schemaName="${schema.name}" tableName="products"/>
+            <dropTable schemaName="${schema.name}" tableName="sources"/>
         </rollback>
+    </changeSet>
+
+    <changeSet id="sources.table.filling" author="anugumanov" dbms="postgresql" runOnChange="true">
+        <sqlFile  path="db/sql/sources-table-filling.sql" splitStatements="false"/>
     </changeSet>
 
 </databaseChangeLog>

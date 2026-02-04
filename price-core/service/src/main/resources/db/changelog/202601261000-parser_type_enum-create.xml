@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="parser_type_enum.type.create" author="anugumanov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(1) from pg_type t join pg_namespace n on (t.typnamespace = n.oid)
+                where n.nspname = '${schema.name}' and t.typname = 'parser_type_enum'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            create type ${schema.name}.parser_type_enum as enum ('HTML', 'JS');
+        </sql>
+        <rollback>
+            <sql>
+                drop type ${schema.name}.parser_type_enum;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

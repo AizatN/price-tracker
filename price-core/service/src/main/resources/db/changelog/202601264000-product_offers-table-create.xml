@@ -32,12 +32,14 @@
             <column name="url" type="varchar" remarks="URL">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_parse_attempt" type="timestamp" remarks="Дата и время последней попытки парсинга">
+            <column name="parse_type" type="${schema.name}.parser_type_enum" remarks="Тип парсинга">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_success_parse" type="timestamp" remarks="Дата и время последнего парсинга">
+            <column name="parser_config" type="jsonb" remarks="Конфигурация парсинга">
                 <constraints nullable="false"/>
             </column>
+            <column name="last_parse_attempt" type="timestamp" remarks="Дата и время последней попытки парсинга"/>
+            <column name="last_success_parse" type="timestamp" remarks="Дата и время последнего парсинга"/>
             <column name="create_dt" type="timestamp" defaultValue="now()" remarks="Дата и время создания">
                 <constraints nullable="false"/>
             </column>
@@ -50,20 +52,8 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="product_offers.index.ux_offer_source_url.create" author="anugumanov">
-        <preConditions onFail="MARK_RAN">
-            <columnExists schemaName="${schema.name}" tableName="product_offers" columnName="source_id"/>
-            <columnExists schemaName="${schema.name}" tableName="product_offers" columnName="url"/>
-        </preConditions>
-        <createIndex schemaName="${schema.name}" tableName="product_offers"
-                     indexName="ux_offer_source_url"
-                     unique="true">
-            <column name="source_id"/>
-            <column name="url"/>
-        </createIndex>
-        <rollback>
-            <dropIndex schemaName="${schema.name}" tableName="product_offers" indexName="ux_offer_source_url"/>
-        </rollback>
+    <changeSet id="product_offers.table.filling" author="anugumanov" dbms="postgresql" runOnChange="true">
+        <sqlFile  path="db/sql/product_offers-table-filling.sql" splitStatements="false"/>
     </changeSet>
 
 </databaseChangeLog>
