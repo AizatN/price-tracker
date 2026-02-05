@@ -16,6 +16,7 @@
         <spring-cloud.version>2024.0.0</spring-cloud.version>
         <jsoup.version>1.18.3</jsoup.version>
         <liquibase.version>4.28.0</liquibase.version>
+        <jackson.version>2.21.0</jackson.version>
         <selenium.version>4.27.0</selenium.version>
         <lombok.version>1.18.42</lombok.version>
     </properties>
@@ -23,6 +24,7 @@
     <modules>
         <module>price-collector</module>
         <module>price-core</module>
+        <module>price-common</module>
     </modules>
 
     <dependencyManagement>
@@ -50,6 +52,12 @@
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-core</artifactId>
                 <version>${liquibase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
