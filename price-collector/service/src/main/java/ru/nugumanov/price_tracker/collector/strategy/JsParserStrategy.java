@@ -7,7 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
-import ru.nugumanov.price_tracker.collector.properties.SelectorProperties.Selector;
+import ru.nugumanov.price_common.enums.ParserTypeEnum;
+import ru.nugumanov.price_common.model.SelectorModel;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -16,15 +17,15 @@ import java.math.BigDecimal;
 @Component
 public class JsParserStrategy implements ParserStrategy {
 
-    private static final String TYPE = "js";
+    private static final ParserTypeEnum TYPE = ParserTypeEnum.JS;
 
     @Override
-    public String getType() {
+    public ParserTypeEnum getType() {
         return TYPE;
     }
 
     @Override
-    public void parse(Selector selector) {
+    public void parse(SelectorModel selector) {
         Document doc;
         try {
             doc = Jsoup.connect(selector.getUrl())

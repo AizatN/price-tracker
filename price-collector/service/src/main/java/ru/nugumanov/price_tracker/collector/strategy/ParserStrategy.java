@@ -1,10 +1,11 @@
 package ru.nugumanov.price_tracker.collector.strategy;
 
-import ru.nugumanov.price_tracker.collector.properties.SelectorProperties.Selector;
+import ru.nugumanov.price_common.enums.ParserTypeEnum;
+import ru.nugumanov.price_common.model.SelectorModel;
 
 public interface ParserStrategy {
 
-    String getType();
+    ParserTypeEnum getType();
 
-    void parse(Selector selector);
+    void parse(SelectorModel selector);
 }

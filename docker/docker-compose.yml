@@ -1,0 +1,89 @@
+services:
+  kafka:
+    image: apache/kafka:3.8.0
+
+    container_name: kafka
+
+    ports:
+      - "9092:9092"
+
+    # ===== Реальные ограничения (работают без Swarm) =====
+    mem_limit: 512m
+    cpus: 0.5
+
+    environment:
+      # ===== JVM =====
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx256m"
+
+      # ===== KRaft =====
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+
+      # ===== Listeners =====
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # ===== Single-node =====
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+
+      # ===== Topic defaults =====
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+      # ===== Retention: 3 дня =====
+      KAFKA_LOG_RETENTION_HOURS: 72
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_LOG_SEGMENT_BYTES: 134217728
+
+      # ===== Cluster ID =====
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+
+    volumes:
+      - kafka_data:/tmp/kraft-combined-logs
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+
+    container_name: kafka-ui
+
+    ports:
+      - "8090:8080"
+
+    mem_limit: 256m
+    cpus: 0.25
+
+    environment:
+      DYNAMIC_CONFIG_ENABLED: "true"
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      JAVA_OPTS: "-Xms128m -Xmx128m"
+
+    depends_on:
+      - kafka
+
+  consul:
+    image: hashicorp/consul:1.20
+
+    container_name: consul
+
+    ports:
+      - "8500:8500"
+
+    mem_limit: 256m
+    cpus: 0.25
+
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+
+    volumes:
+      - consul_data:/consul/data
+
+volumes:
+  kafka_data:
+  consul_data:

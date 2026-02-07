@@ -3,7 +3,8 @@ package ru.nugumanov.price_tracker.collector.strategy;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
-import ru.nugumanov.price_tracker.collector.properties.SelectorProperties.Selector;
+import ru.nugumanov.price_common.enums.ParserTypeEnum;
+import ru.nugumanov.price_common.model.SelectorModel;
 
 import java.io.IOException;
 
@@ -11,15 +12,15 @@ import java.io.IOException;
 @Component
 public class HtmlParserStrategy implements ParserStrategy {
 
-    private static final String TYPE = "html";
+    private static final ParserTypeEnum TYPE = ParserTypeEnum.HTML;
 
     @Override
-    public String getType() {
+    public ParserTypeEnum getType() {
         return TYPE;
     }
 
     @Override
-    public void parse(Selector selector) {
+    public void parse(SelectorModel selector) {
         try {
             var doc = Jsoup.connect(selector.getUrl())
                     .userAgent("Chrome/4.0.249.0 Safari/532.5")

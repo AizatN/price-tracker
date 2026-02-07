@@ -16,9 +16,10 @@
         <spring-cloud.version>2024.0.0</spring-cloud.version>
         <jsoup.version>1.18.3</jsoup.version>
         <liquibase.version>4.28.0</liquibase.version>
-        <jackson.version>2.21.0</jackson.version>
+        <jackson-bom.version>2.21.0</jackson-bom.version>
         <selenium.version>4.27.0</selenium.version>
         <lombok.version>1.18.42</lombok.version>
+        <jakarta.ws.rs.version>4.0.0</jakarta.ws.rs.version>
     </properties>
 
     <modules>
@@ -54,12 +55,12 @@
                 <version>${liquibase.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${jakarta.ws.rs.version}</version>
                 <scope>compile</scope>
             </dependency>
-            <dependency>
+<dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
