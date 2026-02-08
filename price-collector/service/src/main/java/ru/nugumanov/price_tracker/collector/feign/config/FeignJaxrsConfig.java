@@ -1,4 +1,4 @@
-package ru.nugumanov.price_tracker.collector.config;
+package ru.nugumanov.price_tracker.collector.feign.config;
 
 import feign.Contract;
 import feign.jaxrs3.JAXRS3Contract;

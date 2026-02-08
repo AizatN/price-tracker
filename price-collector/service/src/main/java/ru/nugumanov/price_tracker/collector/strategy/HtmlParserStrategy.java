@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 import ru.nugumanov.price_common.enums.ParserTypeEnum;
+import ru.nugumanov.price_common.model.ParseResultModel;
 import ru.nugumanov.price_common.model.SelectorModel;
 
 import java.io.IOException;
@@ -20,18 +21,19 @@ public class HtmlParserStrategy implements ParserStrategy {
     }
 
     @Override
-    public void parse(SelectorModel selector) {
+    public ParseResultModel parse(SelectorModel selector) {
         try {
             var doc = Jsoup.connect(selector.getUrl())
                     .userAgent("Chrome/4.0.249.0 Safari/532.5")
                     .get();
 
-            var title = doc.selectFirst(selector.getTitle());
             var priceEl = doc.selectFirst(selector.getPrice());
 
-            assert title != null;
             assert priceEl != null;
-            System.out.println(title.text() + " - " + priceEl.text());
+            return ParseResultModel.builder()
+                    .productOfferId(selector.getProductOfferId())
+                    .price(priceEl.text())
+                    .build();
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

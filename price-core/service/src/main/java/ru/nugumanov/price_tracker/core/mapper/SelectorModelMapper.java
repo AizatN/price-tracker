@@ -24,6 +24,7 @@ public class SelectorModelMapper {
         }
         var parseConfig = productOffers.getParserConfig();
         return SelectorModel.builder()
+                .productOfferId(productOffers.getId())
                 .url(productOffers.getUrl())
                 .title(parseConfig == null ? null : parseConfig.getTitle())
                 .price(parseConfig == null ? null : parseConfig.getPrice())

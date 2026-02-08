@@ -15,6 +15,11 @@ spring:
       discovery:
         instance-id: ${spring.application.name}:${random.value}
         health-check-interval: 10s
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 core:
   url: http://localhost:8081/api

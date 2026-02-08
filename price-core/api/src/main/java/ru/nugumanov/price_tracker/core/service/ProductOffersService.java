@@ -1,5 +1,6 @@
 package ru.nugumanov.price_tracker.core.service;
 
+import ru.nugumanov.price_common.model.ParseResultModel;
 import ru.nugumanov.price_common.model.ProductOffersModel;
 
 import java.util.List;
@@ -15,4 +16,11 @@ public interface ProductOffersService {
      * @return Список моделей варианта продажи продукта
      */
     List<ProductOffersModel> get();
+
+    /**
+     * Обработка результата парсинга
+     *
+     * @param parseResultModel Модель результата парсинга
+     */
+    void processParseResult(ParseResultModel parseResultModel);
 }

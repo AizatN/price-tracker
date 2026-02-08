@@ -7,6 +7,7 @@ import ru.nugumanov.price_tracker.core.repository.ProductOffersRepository;
 import ru.nugumanov.price_tracker.jooq.tables.pojos.ProductOffersPojo;
 
 import java.util.List;
+import java.util.Optional;
 
 import static ru.nugumanov.price_tracker.jooq.Tables.PRODUCT_OFFERS;
 
@@ -26,5 +27,15 @@ public class ProductOffersRepositoryImpl implements ProductOffersRepository {
     public List<ProductOffersPojo> get() {
         return dsl.selectFrom(PRODUCT_OFFERS)
                 .fetchInto(ProductOffersPojo.class);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<ProductOffersPojo> get(Long id) {
+        return dsl.selectFrom(PRODUCT_OFFERS)
+                .where(PRODUCT_OFFERS.ID.eq(id))
+                .fetchOptionalInto(ProductOffersPojo.class);
     }
 }

@@ -3,6 +3,7 @@ package ru.nugumanov.price_tracker.collector.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.nugumanov.price_tracker.collector.kafka.producer.KafkaProducer;
 import ru.nugumanov.price_tracker.collector.strategy.ParserStrategyFactory;
 
 @Slf4j
@@ -11,6 +12,7 @@ import ru.nugumanov.price_tracker.collector.strategy.ParserStrategyFactory;
 public class PriceParserServiceImpl implements PriceParserService {
 
     private final SelectorService selectorService;
+    private final KafkaProducer kafkaProducer;
     private final ParserStrategyFactory parserStrategyFactory;
 
     @Override
@@ -18,7 +20,7 @@ public class PriceParserServiceImpl implements PriceParserService {
         var selectors = selectorService.get();
         for (var selector : selectors) {
             var strategy = parserStrategyFactory.getStrategy(selector.getType());
-            strategy.parse(selector);
+            kafkaProducer.send(strategy.parse(selector));
         }
     }
 }

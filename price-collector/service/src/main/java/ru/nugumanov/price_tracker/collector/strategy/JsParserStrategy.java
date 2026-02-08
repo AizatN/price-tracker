@@ -8,6 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 import ru.nugumanov.price_common.enums.ParserTypeEnum;
+import ru.nugumanov.price_common.model.ParseResultModel;
 import ru.nugumanov.price_common.model.SelectorModel;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class JsParserStrategy implements ParserStrategy {
     }
 
     @Override
-    public void parse(SelectorModel selector) {
+    public ParseResultModel parse(SelectorModel selector) {
         Document doc;
         try {
             doc = Jsoup.connect(selector.getUrl())
@@ -69,9 +70,12 @@ public class JsParserStrategy implements ParserStrategy {
                         variant.path("offers").path("price").asText()
                 );
 
-                System.out.println(selector.getTitle() + " - " + price);
-                break;
+                return ParseResultModel.builder()
+                        .productOfferId(selector.getProductOfferId())
+                        .price(String.valueOf(price))
+                        .build();
             }
         }
+        return null;
     }
 }
