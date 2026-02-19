@@ -20,12 +20,14 @@
         <selenium.version>4.27.0</selenium.version>
         <lombok.version>1.18.42</lombok.version>
         <jakarta.ws.rs.version>4.0.0</jakarta.ws.rs.version>
+        <telegrambots-client.version>8.2.0</telegrambots-client.version>
     </properties>
 
     <modules>
         <module>price-collector</module>
         <module>price-core</module>
         <module>price-common</module>
+        <module>price-notifier</module>
     </modules>
 
     <dependencyManagement>
@@ -65,6 +67,11 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
                 <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.telegram</groupId>
+                <artifactId>telegrambots-client</artifactId>
+                <version>${telegrambots-client.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

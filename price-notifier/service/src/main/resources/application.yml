@@ -1,13 +1,15 @@
 server:
-  port: 8080
+  port: 8082
 
-price-collector:
+price-notifier:
   scheduler:
     cron: "0 0 */6 * * *"
 
 spring:
   application:
-    name: price-collector-service
+    name: price-notifier-service
+  config:
+    import: "optional:consul:"
   cloud:
     consul:
       host: localhost
@@ -15,11 +17,12 @@ spring:
       discovery:
         instance-id: ${spring.application.name}:${random.value}
         health-check-interval: 10s
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      config:
+        enabled: true
+        prefix: config
+        default-context: price-notifier
+        format: YAML
+        data-key: data
 
 core:
   url: http://localhost:8081/api
