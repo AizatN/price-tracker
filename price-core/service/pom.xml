@@ -93,7 +93,8 @@
                 <artifactId>liquibase-maven-plugin</artifactId>
                 <version>${liquibase.version}</version>
                 <configuration>
-                    <changeLogFile>src/main/resources/db/baseChangelog.xml</changeLogFile>
+                    <changeLogFile>db/baseChangelog.xml</changeLogFile>
+                    <searchPath>src/main/resources</searchPath>
                     <url>${db.url}</url>
                     <username>${db.username}</username>
                     <password>${db.password}</password>
