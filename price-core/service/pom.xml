@@ -94,7 +94,7 @@
                 <version>${liquibase.version}</version>
                 <configuration>
                     <changeLogFile>db/baseChangelog.xml</changeLogFile>
-                    <searchPath>src/main/resources</searchPath>
+                    <searchPath>${project.basedir}/src/main/resources</searchPath>
                     <url>${db.url}</url>
                     <username>${db.username}</username>
                     <password>${db.password}</password>
