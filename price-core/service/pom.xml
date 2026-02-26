@@ -110,6 +110,7 @@
             <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
+                <version>${jooq.version}</version>
                 <dependencies>
                     <dependency>
                         <groupId>ru.nugumanov</groupId>
