@@ -44,7 +44,7 @@ jobs:
           cache: maven
 
       - name: Install price-core dependencies (no jOOQ codegen)
-        run: mvn -B install -DskipTests -pl price-common,price-core/api --no-transfer-progress
+        run: mvn -B install -DskipTests -pl price-common,price-core/api -am --no-transfer-progress
 
       - name: Apply DB schema (Liquibase) for jOOQ codegen
         run: |
