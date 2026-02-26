@@ -43,6 +43,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Install all modules (for dependency resolution)
+        run: mvn -B install -DskipTests --no-transfer-progress
+
       - name: Apply DB schema (Liquibase) for jOOQ codegen
         run: |
           mvn -B liquibase:update \
