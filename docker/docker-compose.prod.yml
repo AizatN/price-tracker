@@ -1,0 +1,136 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    mem_limit: 192m
+    environment:
+      POSTGRES_DB: price_tracker
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - price-tracker-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d price_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: kafka
+    mem_limit: 512m
+    cpus: 0.5
+    environment:
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx256m"
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      # Используем имя контейнера — все сервисы в одной Docker-сети
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 72
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_LOG_SEGMENT_BYTES: 134217728
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    volumes:
+      - kafka_data:/tmp/kraft-combined-logs
+    networks:
+      - price-tracker-net
+    restart: unless-stopped
+
+  consul:
+    image: hashicorp/consul:1.20
+    container_name: consul
+    mem_limit: 128m
+    cpus: 0.25
+    # Без UI — экономим память
+    command: agent -server -bootstrap-expect=1 -client=0.0.0.0
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - price-tracker-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  price-core:
+    image: ${REGISTRY_PREFIX}/price-core:latest
+    container_name: price-core
+    mem_limit: 448m
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/price_tracker
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_CLOUD_CONSUL_HOST: consul
+    networks:
+      - price-tracker-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    restart: unless-stopped
+
+  price-collector:
+    image: ${REGISTRY_PREFIX}/price-collector:latest
+    container_name: price-collector
+    mem_limit: 256m
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_CLOUD_CONSUL_HOST: consul
+      CORE_URL: http://price-core:8081/api
+    networks:
+      - price-tracker-net
+    depends_on:
+      consul:
+        condition: service_healthy
+      price-core:
+        condition: service_started
+    restart: unless-stopped
+
+  price-notifier:
+    image: ${REGISTRY_PREFIX}/price-notifier:latest
+    container_name: price-notifier
+    mem_limit: 192m
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+      CORE_URL: http://price-core:8081/api
+      # Токен берётся из Consul KV: config/price-notifier/data
+      # Установите его командой после первого запуска:
+      #   docker exec consul consul kv put config/price-notifier/data \
+      #     "telegram:\n  bot:\n    token: ВАШ_ТОКЕН"
+    networks:
+      - price-tracker-net
+    depends_on:
+      consul:
+        condition: service_healthy
+      price-core:
+        condition: service_started
+    restart: unless-stopped
+
+networks:
+  price-tracker-net:
+
+volumes:
+  postgres_data:
+  kafka_data:
+  consul_data:
