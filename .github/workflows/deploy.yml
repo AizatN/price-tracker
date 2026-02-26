@@ -43,8 +43,8 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Install all modules (for dependency resolution)
-        run: mvn -B install -DskipTests --no-transfer-progress
+      - name: Install price-core dependencies (no jOOQ codegen)
+        run: mvn -B install -DskipTests -pl price-common,price-core/api --no-transfer-progress
 
       - name: Apply DB schema (Liquibase) for jOOQ codegen
         run: |
