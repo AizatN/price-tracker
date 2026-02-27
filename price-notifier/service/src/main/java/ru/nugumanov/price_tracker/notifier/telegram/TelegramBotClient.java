@@ -43,10 +43,11 @@ public class TelegramBotClient {
 
     private String resolveChatId() {
         try {
-            var getUpdates = GetUpdates.builder().limit(1).offset(-1).build();
+            var getUpdates = GetUpdates.builder().build();
             List<Update> updates = telegramClient.execute(getUpdates);
             if (!updates.isEmpty()) {
-                return updates.get(0).getMessage().getChat().getId().toString();
+                var lastUpdate = updates.get(updates.size() - 1);
+                return lastUpdate.getMessage().getChat().getId().toString();
             }
         } catch (TelegramApiException e) {
             log.error("Failed to get updates: {}", e.getMessage(), e);
