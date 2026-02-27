@@ -98,6 +98,7 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_CLOUD_CONSUL_HOST: consul
       CORE_URL: http://price-core:8081/api
+      PRICE_COLLECTOR_SCHEDULER_CRON: "0 0 */6 * * *"
     networks:
       - price-tracker-net
     depends_on:
@@ -114,6 +115,7 @@ services:
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       CORE_URL: http://price-core:8081/api
+      PRICE_NOTIFIER_SCHEDULER_CRON: "0 0 */6 * * *"
       # Токен берётся из Consul KV: config/price-notifier/data
       # Установите его командой после первого запуска:
       #   docker exec consul consul kv put config/price-notifier/data \
