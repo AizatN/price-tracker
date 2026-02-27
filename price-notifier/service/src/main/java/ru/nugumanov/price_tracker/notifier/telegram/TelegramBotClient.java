@@ -23,35 +23,38 @@ public class TelegramBotClient {
     }
 
     public void sendMessage(String text) {
-        var chatId = resolveChatId();
-        if (chatId == null) {
-            log.warn("No chat ID found. Send /start to the bot first.");
+        var chatIds = resolveChatIds();
+        if (chatIds.isEmpty()) {
+            log.warn("No chat IDs found. Send /start to the bot first.");
             return;
         }
-        var message = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .parseMode("Markdown")
-                .build();
-        try {
-            telegramClient.execute(message);
-            log.info("Telegram message sent successfully");
-        } catch (TelegramApiException e) {
-            log.error("Failed to send Telegram message: {}", e.getMessage(), e);
+        for (var chatId : chatIds) {
+            var message = SendMessage.builder()
+                    .chatId(chatId)
+                    .text(text)
+                    .parseMode("Markdown")
+                    .build();
+            try {
+                telegramClient.execute(message);
+                log.info("Telegram message sent to {}", chatId);
+            } catch (TelegramApiException e) {
+                log.error("Failed to send Telegram message to {}: {}", chatId, e.getMessage(), e);
+            }
         }
     }
 
-    private String resolveChatId() {
+    private List<String> resolveChatIds() {
         try {
             var getUpdates = GetUpdates.builder().build();
             List<Update> updates = telegramClient.execute(getUpdates);
-            if (!updates.isEmpty()) {
-                var lastUpdate = updates.get(updates.size() - 1);
-                return lastUpdate.getMessage().getChat().getId().toString();
-            }
+            return updates.stream()
+                    .filter(u -> u.getMessage() != null)
+                    .map(u -> u.getMessage().getChat().getId().toString())
+                    .distinct()
+                    .toList();
         } catch (TelegramApiException e) {
             log.error("Failed to get updates: {}", e.getMessage(), e);
         }
-        return null;
+        return List.of();
     }
 }
