@@ -1,5 +1,6 @@
 package ru.nugumanov.price_tracker.notifier.telegram;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -10,25 +11,39 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
 public class TelegramBotClient {
 
     private final TelegramClient telegramClient;
+    private final SubscriberRepository subscriberRepository;
 
-    public TelegramBotClient(@Value("${telegram.bot.token}") String botToken) {
+    private final Set<String> knownChatIds = new HashSet<>();
+    private int lastUpdateOffset = 0;
+
+    public TelegramBotClient(@Value("${telegram.bot.token}") String botToken,
+                             SubscriberRepository subscriberRepository) {
         this.telegramClient = new OkHttpTelegramClient(botToken);
+        this.subscriberRepository = subscriberRepository;
+    }
+
+    @PostConstruct
+    public void init() {
+        knownChatIds.addAll(subscriberRepository.load());
+        log.info("Loaded {} subscribers from Consul", knownChatIds.size());
     }
 
     public void sendMessage(String text) {
-        var chatIds = resolveChatIds();
-        if (chatIds.isEmpty()) {
+        refreshChatIds();
+        if (knownChatIds.isEmpty()) {
             log.warn("No chat IDs found. Send /start to the bot first.");
             return;
         }
-        for (var chatId : chatIds) {
+        for (var chatId : knownChatIds) {
             var message = SendMessage.builder()
                     .chatId(chatId)
                     .text(text)
@@ -43,18 +58,33 @@ public class TelegramBotClient {
         }
     }
 
-    private List<String> resolveChatIds() {
+    private void refreshChatIds() {
         try {
-            var getUpdates = GetUpdates.builder().build();
+            var getUpdates = GetUpdates.builder().offset(lastUpdateOffset).build();
             List<Update> updates = telegramClient.execute(getUpdates);
-            return updates.stream()
-                    .filter(u -> u.getMessage() != null)
-                    .map(u -> u.getMessage().getChat().getId().toString())
-                    .distinct()
-                    .toList();
+
+            boolean changed = false;
+            for (Update update : updates) {
+                if (update.getMessage() == null) continue;
+                String chatId = update.getMessage().getChat().getId().toString();
+                String text = update.getMessage().getText();
+                if ("/stop".equals(text)) {
+                    changed |= knownChatIds.remove(chatId);
+                } else {
+                    changed |= knownChatIds.add(chatId);
+                }
+            }
+
+            updates.stream()
+                    .mapToInt(Update::getUpdateId)
+                    .max()
+                    .ifPresent(maxId -> lastUpdateOffset = maxId + 1);
+
+            if (changed) {
+                subscriberRepository.save(knownChatIds);
+            }
         } catch (TelegramApiException e) {
             log.error("Failed to get updates: {}", e.getMessage(), e);
         }
-        return List.of();
     }
 }
