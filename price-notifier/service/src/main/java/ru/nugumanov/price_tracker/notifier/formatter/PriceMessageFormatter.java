@@ -28,13 +28,13 @@ public class PriceMessageFormatter {
         sb.append("\uD83D\uDCCA *\u0421\u0432\u043E\u0434\u043A\u0430 \u0446\u0435\u043D*\n\n");
 
         var grouped = reports.stream()
-                .collect(Collectors.groupingBy(PriceReportModel::getSourceName, Collectors.toList()));
+                .collect(Collectors.groupingBy(PriceReportModel::getProductName, Collectors.toList()));
 
         for (var entry : grouped.entrySet()) {
-            sb.append("\uD83C\uDFEC *").append(escapeMarkdown(entry.getKey())).append("*\n\n");
+            sb.append("\uD83C\uDFF7 *").append(escapeMarkdown(entry.getKey())).append("*\n\n");
 
             for (var report : entry.getValue()) {
-                sb.append("\uD83C\uDFF7 ").append(escapeMarkdown(report.getProductName())).append("\n");
+                sb.append("   \uD83C\uDFEC ").append(escapeMarkdown(report.getSourceName())).append("\n");
                 sb.append("   \u0426\u0435\u043D\u0430: ").append(PRICE_FORMAT.format(report.getCurrentPrice())).append(" \u20BD\n");
                 if (report.getLastUpdated() != null) {
                     sb.append("   \u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u043E: ").append(report.getLastUpdated().format(DATE_FORMATTER)).append("\n");

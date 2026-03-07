@@ -58,6 +58,18 @@ public class TelegramBotClient {
         }
     }
 
+    private void sendReply(String chatId, String text) {
+        var message = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .build();
+        try {
+            telegramClient.execute(message);
+        } catch (TelegramApiException e) {
+            log.error("Failed to send reply to {}: {}", chatId, e.getMessage(), e);
+        }
+    }
+
     private void refreshChatIds() {
         try {
             var getUpdates = GetUpdates.builder().offset(lastUpdateOffset).build();
@@ -71,7 +83,15 @@ public class TelegramBotClient {
                 if ("/stop".equals(text)) {
                     changed |= knownChatIds.remove(chatId);
                 } else {
-                    changed |= knownChatIds.add(chatId);
+                    boolean added = knownChatIds.add(chatId);
+                    changed |= added;
+                    if ("/start".equals(text)) {
+                        if (added) {
+                            sendReply(chatId, "✅ Вы подписаны на уведомления о ценах. Отправьте /stop чтобы отписаться.");
+                        } else {
+                            sendReply(chatId, "ℹ️ Вы уже подписаны на рассылку.");
+                        }
+                    }
                 }
             }
 
