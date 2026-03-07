@@ -111,7 +111,7 @@ services:
   price-notifier:
     image: ${REGISTRY_PREFIX}/price-notifier:latest
     container_name: price-notifier
-    mem_limit: 192m
+    mem_limit: 320m
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       CORE_URL: http://price-core:8081/api
