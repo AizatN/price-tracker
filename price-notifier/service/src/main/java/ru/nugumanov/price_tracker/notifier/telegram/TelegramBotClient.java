@@ -95,7 +95,13 @@ public class TelegramBotClient {
             String chatId = update.getMessage().getChat().getId().toString();
             String text = update.getMessage().getText();
             if ("/stop".equals(text)) {
-                changed |= knownChatIds.remove(chatId);
+                boolean removed = knownChatIds.remove(chatId);
+                changed |= removed;
+                if (removed) {
+                    sendReply(chatId, "✅ Вы отписаны от уведомлений!");
+                } else {
+                    sendReply(chatId, "ℹ️ Вы не были подписаны на рассылку.");
+                }
             } else {
                 boolean added = knownChatIds.add(chatId);
                 changed |= added;
