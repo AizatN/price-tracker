@@ -2,6 +2,7 @@ package ru.nugumanov.price_tracker.notifier.telegram;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -14,10 +15,13 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
 public class TelegramBotClient {
+
+    private static final int LONG_POLL_TIMEOUT = 30;
 
     private final TelegramClient telegramClient;
     private final SubscriberRepository subscriberRepository;
@@ -27,7 +31,10 @@ public class TelegramBotClient {
 
     public TelegramBotClient(@Value("${telegram.bot.token}") String botToken,
                              SubscriberRepository subscriberRepository) {
-        this.telegramClient = new OkHttpTelegramClient(botToken);
+        var httpClient = new OkHttpClient.Builder()
+                .readTimeout(LONG_POLL_TIMEOUT + 5, TimeUnit.SECONDS)
+                .build();
+        this.telegramClient = new OkHttpTelegramClient(httpClient, botToken);
         this.subscriberRepository = subscriberRepository;
     }
 
@@ -35,10 +42,13 @@ public class TelegramBotClient {
     public void init() {
         knownChatIds.addAll(subscriberRepository.load());
         log.info("Loaded {} subscribers from Consul", knownChatIds.size());
+
+        Thread thread = new Thread(this::runLongPolling, "telegram-long-polling");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public void sendMessage(String text) {
-        refreshChatIds();
         if (knownChatIds.isEmpty()) {
             log.warn("No chat IDs found. Send /start to the bot first.");
             return;
@@ -58,6 +68,57 @@ public class TelegramBotClient {
         }
     }
 
+    private void runLongPolling() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                var getUpdates = GetUpdates.builder()
+                        .offset(lastUpdateOffset)
+                        .timeout(LONG_POLL_TIMEOUT)
+                        .build();
+                List<Update> updates = telegramClient.execute(getUpdates);
+                processUpdates(updates);
+            } catch (TelegramApiException e) {
+                log.error("Long polling error: {}", e.getMessage(), e);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    private void processUpdates(List<Update> updates) {
+        boolean changed = false;
+        for (Update update : updates) {
+            if (update.getMessage() == null) continue;
+            String chatId = update.getMessage().getChat().getId().toString();
+            String text = update.getMessage().getText();
+            if ("/stop".equals(text)) {
+                changed |= knownChatIds.remove(chatId);
+            } else {
+                boolean added = knownChatIds.add(chatId);
+                changed |= added;
+                if ("/start".equals(text)) {
+                    if (added) {
+                        sendReply(chatId, "✅ Вы подписаны на уведомления о ценах. Отправьте /stop чтобы отписаться.");
+                    } else {
+                        sendReply(chatId, "ℹ️ Вы уже подписаны на рассылку.");
+                    }
+                }
+            }
+        }
+
+        updates.stream()
+                .mapToInt(Update::getUpdateId)
+                .max()
+                .ifPresent(maxId -> lastUpdateOffset = maxId + 1);
+
+        if (changed) {
+            subscriberRepository.save(knownChatIds);
+        }
+    }
+
     private void sendReply(String chatId, String text) {
         var message = SendMessage.builder()
                 .chatId(chatId)
@@ -67,44 +128,6 @@ public class TelegramBotClient {
             telegramClient.execute(message);
         } catch (TelegramApiException e) {
             log.error("Failed to send reply to {}: {}", chatId, e.getMessage(), e);
-        }
-    }
-
-    private void refreshChatIds() {
-        try {
-            var getUpdates = GetUpdates.builder().offset(lastUpdateOffset).build();
-            List<Update> updates = telegramClient.execute(getUpdates);
-
-            boolean changed = false;
-            for (Update update : updates) {
-                if (update.getMessage() == null) continue;
-                String chatId = update.getMessage().getChat().getId().toString();
-                String text = update.getMessage().getText();
-                if ("/stop".equals(text)) {
-                    changed |= knownChatIds.remove(chatId);
-                } else {
-                    boolean added = knownChatIds.add(chatId);
-                    changed |= added;
-                    if ("/start".equals(text)) {
-                        if (added) {
-                            sendReply(chatId, "✅ Вы подписаны на уведомления о ценах. Отправьте /stop чтобы отписаться.");
-                        } else {
-                            sendReply(chatId, "ℹ️ Вы уже подписаны на рассылку.");
-                        }
-                    }
-                }
-            }
-
-            updates.stream()
-                    .mapToInt(Update::getUpdateId)
-                    .max()
-                    .ifPresent(maxId -> lastUpdateOffset = maxId + 1);
-
-            if (changed) {
-                subscriberRepository.save(knownChatIds);
-            }
-        } catch (TelegramApiException e) {
-            log.error("Failed to get updates: {}", e.getMessage(), e);
         }
     }
 }
