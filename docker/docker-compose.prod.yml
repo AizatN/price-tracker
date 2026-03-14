@@ -55,10 +55,10 @@ services:
   consul:
     image: hashicorp/consul:1.20
     container_name: consul
-    mem_limit: 128m
+    mem_limit: 192m
     cpus: 0.25
     # Без UI — экономим память
-    command: agent -server -bootstrap-expect=1 -client=0.0.0.0
+    command: agent -server -bootstrap-expect=1 -client=0.0.0.0 -log-level=warn
     volumes:
       - consul_data:/consul/data
     networks:
@@ -128,7 +128,7 @@ services:
         condition: service_healthy
       price-core:
         condition: service_started
-    restart: unless-stopped
+    restart: on-failure:5
 
 networks:
   price-tracker-net:
