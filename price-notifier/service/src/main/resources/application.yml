@@ -15,8 +15,9 @@ spring:
       host: localhost
       port: 8500
       discovery:
-        instance-id: ${spring.application.name}:${random.value}
+        instance-id: ${spring.application.name}
         health-check-interval: 10s
+        health-check-deregister-critical-service-after: 2m
       config:
         enabled: true
         prefix: config
