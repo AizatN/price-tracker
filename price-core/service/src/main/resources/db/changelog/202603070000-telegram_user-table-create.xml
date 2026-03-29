@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="telegram_user.table.create" author="anugumanov">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="${schema.name}" tableName="telegram_user"/>
+            </not>
+        </preConditions>
+        <createTable schemaName="${schema.name}" tableName="telegram_user" remarks="Telegram-пользователи">
+            <column name="chat_id" type="VARCHAR(64)" remarks="Идентификатор чата Telegram">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_dt" type="timestamp" defaultValue="now()" remarks="Дата и время добавления">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_dt" type="timestamp" remarks="Дата и время удаления"/>
+        </createTable>
+        <rollback>
+            <dropTable schemaName="${schema.name}" tableName="telegram_user"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,21 +1,12 @@
 package ru.nugumanov.price_tracker.notifier.feign;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
 import org.springframework.cloud.openfeign.FeignClient;
-import ru.nugumanov.price_common.model.PriceReportModel;
-import ru.nugumanov.price_tracker.notifier.feign.config.FeignJaxrsConfig;
-
-import java.util.List;
+import ru.nugumanov.price_tracker.core.rest.PriceNotifierInternalRest;
 
 @FeignClient(
         name = "coreClient",
         url = "${core.url}",
-        configuration = FeignJaxrsConfig.class
+        path = "/internal/notifier"
 )
-@Path("/price-report")
-public interface PriceReportRestFeign {
-
-    @GET
-    List<PriceReportModel> get();
+public interface PriceReportRestFeign extends PriceNotifierInternalRest {
 }

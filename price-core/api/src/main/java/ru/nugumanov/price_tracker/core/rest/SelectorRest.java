@@ -1,7 +1,6 @@
 package ru.nugumanov.price_tracker.core.rest;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
+import org.springframework.web.bind.annotation.GetMapping;
 import ru.nugumanov.price_common.model.SelectorModel;
 
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.List;
 /**
  * Рест сервис для работы моделями выбора значений
  */
-@Path("/selector")
 public interface SelectorRest {
 
     /**
@@ -17,6 +15,6 @@ public interface SelectorRest {
      *
      * @return Список моделей выбора значений
      */
-    @GET
+    @GetMapping
     List<SelectorModel> get();
 }

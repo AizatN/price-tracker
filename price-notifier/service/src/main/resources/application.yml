@@ -3,27 +3,11 @@ server:
 
 price-notifier:
   scheduler:
-    cron: "0 0 */6 * * *"
+    cron: "0 */1 * * * *"
 
 spring:
   application:
     name: price-notifier-service
-  config:
-    import: "optional:consul:"
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      discovery:
-        instance-id: ${spring.application.name}
-        health-check-interval: 10s
-        health-check-deregister-critical-service-after: 2m
-      config:
-        enabled: true
-        prefix: config
-        default-context: price-notifier
-        format: YAML
-        data-key: data
 
 core:
   url: http://localhost:8081/api

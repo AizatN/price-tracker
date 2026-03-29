@@ -68,22 +68,5 @@ services:
     depends_on:
       - kafka
 
-  consul:
-    image: hashicorp/consul:1.20
-
-    container_name: consul
-
-    ports:
-      - "8500:8500"
-
-    mem_limit: 256m
-    cpus: 0.25
-
-    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
-
-    volumes:
-      - consul_data:/consul/data
-
 volumes:
   kafka_data:
-  consul_data:

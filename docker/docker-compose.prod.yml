@@ -52,25 +52,6 @@ services:
       - price-tracker-net
     restart: unless-stopped
 
-  consul:
-    image: hashicorp/consul:1.20
-    container_name: consul
-    mem_limit: 192m
-    cpus: 0.25
-    # Без UI — экономим память
-    command: agent -server -bootstrap-expect=1 -client=0.0.0.0 -log-level=warn
-    volumes:
-      - consul_data:/consul/data
-    networks:
-      - price-tracker-net
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "consul", "members"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   price-core:
     image: ${REGISTRY_PREFIX}/price-core:latest
     container_name: price-core
@@ -80,14 +61,13 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_CLOUD_CONSUL_HOST: consul
     networks:
       - price-tracker-net
     depends_on:
       postgres:
         condition: service_healthy
-      consul:
-        condition: service_healthy
+      kafka:
+        condition: service_started
     restart: unless-stopped
 
   price-collector:
@@ -96,14 +76,11 @@ services:
     mem_limit: 256m
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_CLOUD_CONSUL_HOST: consul
       CORE_URL: http://price-core:8081/api
       PRICE_COLLECTOR_SCHEDULER_CRON: "0 0 */6 * * *"
     networks:
       - price-tracker-net
     depends_on:
-      consul:
-        condition: service_healthy
       price-core:
         condition: service_started
     restart: unless-stopped
@@ -113,19 +90,13 @@ services:
     container_name: price-notifier
     mem_limit: 320m
     environment:
-      SPRING_CLOUD_CONSUL_HOST: consul
       CORE_URL: http://price-core:8081/api
       PRICE_NOTIFIER_SCHEDULER_CRON: "0 0 */6 * * *"
       JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
-      # Токен берётся из Consul KV: config/price-notifier/data
-      # Установите его командой после первого запуска:
-      #   docker exec consul consul kv put config/price-notifier/data \
-      #     "telegram:\n  bot:\n    token: ВАШ_ТОКЕН"
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     networks:
       - price-tracker-net
     depends_on:
-      consul:
-        condition: service_healthy
       price-core:
         condition: service_started
     restart: on-failure:5
@@ -136,4 +107,3 @@ networks:
 volumes:
   postgres_data:
   kafka_data:
-  consul_data:

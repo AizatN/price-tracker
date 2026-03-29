@@ -21,7 +21,7 @@ public class NotifierServiceImpl implements NotifierService {
      */
     @Override
     public void sendPriceReport() {
-        var reports = priceReportRestFeign.get();
+        var reports = priceReportRestFeign.getPriceReport();
         if (reports.isEmpty()) {
             log.info("No price reports to send");
             return;

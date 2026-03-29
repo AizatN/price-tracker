@@ -1,7 +1,6 @@
 package ru.nugumanov.price_tracker.core.rest;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nugumanov.price_common.model.SelectorModel;
@@ -23,7 +22,6 @@ public class SelectorRestImpl implements SelectorRest {
     /**
      * {@inheritDoc}
      */
-    @GetMapping
     @Override
     public List<SelectorModel> get() {
         return SelectorModelMapper.get(productOffersService.get());
