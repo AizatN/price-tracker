@@ -77,7 +77,7 @@ services:
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       CORE_URL: http://price-core:8081/api
-      PRICE_COLLECTOR_SCHEDULER_CRON: "0 0 */6 * * *"
+      PRICE_COLLECTOR_SCHEDULER_CRON: "${COLLECTOR_CRON:-0 0 */6 * * *}"
     networks:
       - price-tracker-net
     depends_on:
@@ -91,7 +91,7 @@ services:
     mem_limit: 320m
     environment:
       CORE_URL: http://price-core:8081/api
-      PRICE_NOTIFIER_SCHEDULER_CRON: "0 0 */6 * * *"
+      PRICE_NOTIFIER_SCHEDULER_CRON: "${NOTIFIER_CRON:-0 0 */6 * * *}"
       JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     networks:
